@@ -1,13 +1,40 @@
 # Lead Generation CRM - Production Ready 🚀
 
-A secure, full-featured lead generation and email outreach system with tracking, analytics, and CRM capabilities.
+A secure, multi-user lead generation and email outreach system with tracking, analytics, and CRM capabilities.
+
+## 🔑 Two Different Passwords Explained
+
+**IMPORTANT:** This system uses two separate passwords:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│  1️⃣  ACCOUNT PASSWORD (Sign Up/Login)                      │
+│  • Created during sign up at /login                         │
+│  • Used to access the CRM application                       │
+│  • Example: "MySecurePassword123"                           │
+│  • ❌ NOT your email password!                              │
+└─────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────┐
+│  2️⃣  EMAIL CREDENTIALS (Settings Page)                     │
+│  • Configured after login in /settings                      │
+│  • Used for actually sending emails                         │
+│  • Options:                                                  │
+│    - Gmail App Password (16 chars from Google)              │
+│    - SendGrid API Key (starts with "SG.")                   │
+└─────────────────────────────────────────────────────────────┘
+```
 
 ## ✨ Features
 
+- 👥 **Multi-User Support** - Each team member has their own account and email credentials
+- 🔐 **Secure Authentication** - Supabase Auth with JWT tokens and Row Level Security
 - 📧 **Bulk Email Sending** - Send personalized emails to up to 30 leads at once
+- 🔍 **Lead Finding** - Apollo.io integration for company-based lead discovery
+- ✉️ **Email Verification** - Hunter.io integration to validate email addresses
 - 📊 **Analytics Dashboard** - Track opens, engagement, and conversion rates
-- 👥 **CRM Interface** - Manage leads with status tracking and notes
-- 🔍 **Email Tracking** - Pixel-based open tracking with IP/user-agent logging
+- 💼 **CRM Interface** - Manage leads with status tracking and notes
+- 📈 **Open Tracking** - Pixel-based tracking with IP/user-agent logging
 - 🔒 **Enterprise Security** - Rate limiting, input validation, RLS, API auth
 - 🎨 **Modern Dark Theme** - Beautiful green/grey/yellow gradient design
 - ⚡ **Performance Optimized** - Indexed queries, efficient data fetching
@@ -15,20 +42,45 @@ A secure, full-featured lead generation and email outreach system with tracking,
 ## 🏗️ Tech Stack
 
 - **Frontend**: Next.js 16 (React 19) + Tailwind CSS
-- **Backend**: Supabase (PostgreSQL)
-- **Email**: Gmail SMTP (nodemailer)
+- **Backend**: Supabase (PostgreSQL + Authentication)
+- **Email**: Gmail SMTP (nodemailer) + SendGrid
+- **Integrations**: Hunter.io (verification) + Apollo.io (lead finding)
 - **Hosting**: Vercel (recommended)
-- **Security**: RLS, rate limiting, input validation, CSP headers
+- **Security**: RLS, JWT auth, rate limiting, input validation, CSP headers
 
 ---
 
 ## 🚀 Quick Start
 
+### Setup Workflow
+
+```
+Step 1: Deploy & Configure
+├── Deploy to Vercel
+├── Setup Supabase database (run supabase.sql)
+└── Add environment variables
+
+Step 2: Create Your Account  
+├── Visit /login
+├── Sign up with email + NEW password (for CRM access)
+└── Verify email
+
+Step 3: Configure Email Credentials
+├── Login and go to /settings
+├── Choose provider (Gmail or SendGrid)
+├── Add Gmail App Password OR SendGrid API Key
+└── Save credentials
+
+Step 4: Start Sending!
+├── Find leads at /find (Apollo.io search)
+├── Import to /bulk
+└── Send campaigns using YOUR credentials
+```
+
 ### Prerequisites
 - Node.js 20+ 
 - npm or pnpm
-- Supabase account
-- Gmail account with 2FA + app password
+- Supabase account (**with Authentication enabled**)
 - Vercel account (for deployment)
 
 ### Local Development
@@ -42,7 +94,8 @@ npm install
 2. **Configure environment**:
 ```bash
 cp .env.example .env.local
-# Edit .env.local with your credentials
+# Edit .env.local with your Supabase credentials
+# Note: Email credentials are now per-user in Settings, not in .env
 ```
 
 3. **Setup database**:
@@ -79,8 +132,12 @@ vercel --prod
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 - `SUPABASE_SERVICE_KEY`
 - `PUBLIC_APP_URL`
-- `SEND_EMAIL_FROM`
-- `APP_PASSWORD`
+- `SEND_EMAIL_FROM` (default, users can override in Settings)
+- `APP_PASSWORD` (default, users can override in Settings)
+- `SENDGRID_API_KEY` (optional, for SendGrid users)
+- `SENDGRID_FROM` (optional, for SendGrid users)
+- `HUNTER_API_KEY` (optional, for email verification)
+- `APOLLO_API_KEY` (optional, for lead finding)
 - `API_SECRET_KEY`
 - `DELAY_SECONDS`
 - `ALLOWED_ORIGINS`
@@ -111,23 +168,31 @@ vercel --prod
 ```
 crm/
 ├── pages/
-│   ├── index.js          # Landing page
-│   ├── bulk.js           # Bulk email interface
-│   ├── leads.js          # CRM table view
-│   ├── analytics.js      # Analytics dashboard
+│   ├── index.js            # Landing page
+│   ├── bulk.js             # Bulk email interface
+│   ├── find.js             # Lead finder (Apollo.io)
+│   ├── settings.js         # User credential management
+│   ├── leads.js            # CRM table view
+│   ├── analytics.js        # Analytics dashboard
 │   └── api/
-│       ├── bulk-send.js  # Email sending API
-│       └── track.js      # Tracking pixel API
+│       ├── bulk-send.js    # Email sending API
+│       ├── verify-email.js # Hunter.io verification
+│       ├── enrich-lead.js  # Apollo.io enrichment
+│       ├── find-leads.js   # Apollo.io search
+│       └── track.js        # Tracking pixel API
 ├── lib/
-│   ├── auth.js           # Authentication & headers
-│   ├── validation.js     # Input validation
-│   └── rateLimit.js      # Rate limiting
-├── supabase.sql          # Database schema + RLS
-├── vercel.json           # Vercel configuration
-├── DEPLOYMENT.md         # Deployment guide
-├── SECURITY.md           # Security documentation
-├── CHECKLIST.md          # Pre-deployment checklist
-└── .env.example          # Environment template
+│   ├── auth.js             # Authentication & headers
+│   ├── validation.js       # Input validation
+│   ├── rateLimit.js        # Rate limiting
+│   └── integrations.js     # Hunter/SendGrid/Apollo
+├── supabase.sql            # Database schema + RLS
+├── vercel.json             # Vercel configuration
+├── DEPLOYMENT.md           # Deployment guide
+├── SECURITY.md             # Security documentation
+├── API_INTEGRATIONS.md     # API setup guide
+├── MULTI_USER_GUIDE.md     # Multi-user setup guide
+├── CHECKLIST.md            # Pre-deployment checklist
+└── .env.example            # Environment template
 ```
 
 ---
@@ -199,6 +264,32 @@ colors: {
 
 ---
 
+## 👥 Multi-User Setup
+
+### For Team Use:
+
+1. **Admin Setup** (one-time):
+   - Deploy to Vercel with default credentials in environment variables
+   - Optional: Configure default Hunter/SendGrid/Apollo keys
+
+2. **Each User**:
+   - Navigate to **⚙️ Settings** page
+   - Choose email provider (Gmail or SendGrid)
+   - Enter their email credentials
+   - Save (stored in browser localStorage)
+   - Credentials used for all their campaigns
+
+3. **Benefits**:
+   - Each user sends from their own email
+   - Independent rate limits per user
+   - Better deliverability
+   - Personalized sender addresses
+   - No shared credentials
+
+**See [MULTI_USER_GUIDE.md](./MULTI_USER_GUIDE.md) for complete setup instructions**
+
+---
+
 ## 🧪 Testing
 
 ### Local Testing
@@ -258,6 +349,17 @@ curl -X POST https://your-app.vercel.app/api/bulk-send \
 - ✅ Check NODE_ENV is 'production'
 
 **More in [DEPLOYMENT.md](./DEPLOYMENT.md#troubleshooting)**
+
+---
+
+## 📚 Documentation
+
+- **[DEPLOYMENT.md](./DEPLOYMENT.md)** - Complete deployment guide (400+ lines)
+- **[SECURITY.md](./SECURITY.md)** - Security audit & best practices
+- **[API_INTEGRATIONS.md](./API_INTEGRATIONS.md)** - Hunter/SendGrid/Apollo setup
+- **[MULTI_USER_GUIDE.md](./MULTI_USER_GUIDE.md)** - Team member onboarding
+- **[CHECKLIST.md](./CHECKLIST.md)** - Pre-deployment checklist
+- **[START_HERE.md](./START_HERE.md)** - Quick start guide
 
 ---
 

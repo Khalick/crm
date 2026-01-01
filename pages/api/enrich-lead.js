@@ -25,14 +25,14 @@ export default async function handler(req, res) {
     }
   }
   
-  const { email } = req.body
+  const { email, apolloKey } = req.body
   
   if (!email || typeof email !== 'string') {
     return res.status(400).json({ error: 'Email is required' })
   }
   
   try {
-    const result = await enrichLeadApollo(email)
+    const result = await enrichLeadApollo(email, apolloKey)
     return res.status(200).json(result)
   } catch (error) {
     console.error('Enrichment error:', error)

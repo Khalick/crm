@@ -19,10 +19,16 @@ export default function FindLeads() {
     setLeads([])
 
     try {
+      const apolloKey = localStorage.getItem('apolloKey') || ''
+      
       const response = await fetch('/api/find-leads', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ domain: domain.trim(), limit })
+        body: JSON.stringify({ 
+          domain: domain.trim(), 
+          limit,
+          apolloKey 
+        })
       })
 
       const data = await response.json()

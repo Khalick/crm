@@ -2,6 +2,22 @@
 
 create extension if not exists "uuid-ossp";
 
+-- Create user_credentials table (encrypted email credentials per user)
+create table if not exists user_credentials (
+  id uuid default uuid_generate_v4() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  email_provider text not null check (email_provider in ('gmail', 'sendgrid')),
+  send_from text not null,
+  app_password text not null, -- For Gmail SMTP
+  sendgrid_key text, -- For SendGrid API
+  sendgrid_from text, -- SendGrid sender email
+  hunter_key text, -- Optional Hunter.io API key
+  apollo_key text, -- Optional Apollo.io API key
+  created_at timestamp default now(),
+  updated_at timestamp default now(),
+  unique(user_id)
+);
+
 -- Create leads table
 create table if not exists leads (
   id uuid default uuid_generate_v4() primary key,
@@ -50,6 +66,38 @@ create policy "Anon can read leads"
   for select
   to anon
   using (true);
+
+-- Enable RLS on user_credentials
+alter table user_credentials enable row level security;
+
+-- Create policies for user_credentials table
+-- Users can only access their own credentials
+create policy "Users can read own credentials"
+  on user_credentials
+  for select
+  to authenticated
+  using (auth.uid() = user_id);
+
+create policy "Users can insert own credentials"
+  on user_credentials
+  for insert
+  to authenticated
+  with check (auth.uid() = user_id);
+
+create policy "Users can update own credentials"
+  on user_credentials
+  for update
+  to authenticated
+  using (auth.uid() = user_id)
+  with check (auth.uid() = user_id);
+
+-- Service role can access all credentials (for API operations)
+create policy "Service role full access to credentials"
+  on user_credentials
+  for all
+  to service_role
+  using (true)
+  with check (true);
 
 -- Create policies for email_events table
 -- Service role can do everything

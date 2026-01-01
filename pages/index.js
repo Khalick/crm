@@ -27,13 +27,17 @@ export default function Home() {
           </p>
 
           <div className="flex gap-4 justify-center">
-            <Link href="/bulk" className="btn-primary text-lg px-8 py-4">
-              📧 Send Bulk Campaign
+            <Link href="/login" className="btn-primary text-lg px-8 py-4">
+              🚀 Get Started Free
             </Link>
             <Link href="/leads" className="bg-dark-700 text-gray-100 px-8 py-4 rounded-lg font-semibold border border-dark-600 hover:bg-dark-600 transition-all duration-200 text-lg">
-              👥 View Leads
+              👥 View Demo
             </Link>
           </div>
+          
+          <p className="text-sm text-gray-400 mt-4">
+            ✓ Multi-user accounts &nbsp;·&nbsp; ✓ Your own credentials &nbsp;·&nbsp; ✓ Secure storage
+          </p>
         </div>
 
         {/* Stats */}

@@ -1,8 +1,47 @@
 import '../styles/globals.css'
+import { AuthProvider, useAuth } from '../context/AuthContext'
+import { useRouter } from 'next/router'
+
+function Navigation() {
+  const { user, signOut } = useAuth()
+  const router = useRouter()
+
+  const handleSignOut = async () => {
+    await signOut()
+    router.push('/login')
+  }
+
+  return (
+    <nav className="flex gap-6 text-sm items-center">
+      <a href="/" className="text-gray-300 hover:text-accent transition-colors">Home</a>
+      <a href="/find" className="text-gray-300 hover:text-accent transition-colors">🔍 Find Leads</a>
+      <a href="/bulk" className="text-gray-300 hover:text-accent transition-colors">Send Bulk</a>
+      <a href="/leads" className="text-gray-300 hover:text-accent transition-colors">Leads</a>
+      <a href="/analytics" className="text-gray-300 hover:text-accent transition-colors">Analytics</a>
+      <a href="/settings" className="text-gray-300 hover:text-accent transition-colors">⚙️ Settings</a>
+      {user ? (
+        <div className="flex items-center gap-4 ml-4 pl-4 border-l border-dark-700">
+          <span className="text-xs text-gray-400">{user.email}</span>
+          <button 
+            onClick={handleSignOut}
+            className="text-xs px-3 py-1 bg-dark-700 hover:bg-dark-600 rounded transition-colors"
+          >
+            Sign Out
+          </button>
+        </div>
+      ) : (
+        <a href="/login" className="ml-4 pl-4 border-l border-dark-700 text-accent hover:text-accent-light transition-colors">
+          Sign In
+        </a>
+      )}
+    </nav>
+  )
+}
 
 export default function App({ Component, pageProps }) {
   return (
-    <div className="min-h-screen flex flex-col">
+    <AuthProvider>
+      <div className="min-h-screen flex flex-col">
       <header className="bg-dark-800 border-b border-dark-700 shadow-xl backdrop-blur-sm">
         <div className="container py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
@@ -14,12 +53,8 @@ export default function App({ Component, pageProps }) {
               <div className="text-xs text-gray-400">Lead Generation Pro</div>
             </div>
           </div>
-          <nav className="flex gap-6 text-sm">
-            <a href="/" className="text-gray-300 hover:text-accent transition-colors">Home</a>
-            <a href="/find" className="text-gray-300 hover:text-accent transition-colors">🔍 Find Leads</a>
-            <a href="/bulk" className="text-gray-300 hover:text-accent transition-colors">Send Bulk</a>
-            <a href="/leads" className="text-gray-300 hover:text-accent transition-colors">Leads</a>
-            <a href="/analytics" className="text-gray-300 hover:text-accent transition-colors">Analytics</a>
+          <nav className="flex gap-6 text-sm items-center">
+            <Navigation />
           </nav>
         </div>
       </header>
@@ -34,5 +69,6 @@ export default function App({ Component, pageProps }) {
         </div>
       </footer>
     </div>
+    </AuthProvider>
   )
 }

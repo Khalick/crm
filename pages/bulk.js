@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/router'
+import { useAuth } from '../context/AuthContext'
+import { supabase } from '../lib/supabaseClient'
 
 export default function Bulk() {
   const router = useRouter()
+  const { user } = useAuth()
   const [leads, setLeads] = useState([{ name: '', email: '', business: '', location: '', role: '' }])
   const [sending, setSending] = useState(false)
   const [log, setLog] = useState([])
@@ -61,16 +64,56 @@ export default function Bulk() {
   async function onSend() {
     const validLeads = leads.filter(l => l.email.trim())
     if (!validLeads.length) return alert('No valid emails found')
-    if (!confirm(`Send ${validLeads.length} emails now?`)) return
-
+    
+    // Check if user is logged in
+    if (!user) {
+      alert('Please sign in to send emails. Redirecting to login...')
+      router.push('/login')
+      return
+    }
+    
     setSending(true)
     setLog([])
 
     try {
+      // Get user's session token
+      const { data: { session } } = await supabase.auth.getSession()
+      
+      if (!session) {
+        throw new Error('No active session. Please sign in again.')
+      }
+
+      // Fetch user's credentials from API
+      const credRes = await fetch('/api/user-credentials', {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      })
+
+      const credData = await credRes.json()
+
+      if (!credData.hasCredentials) {
+        if (!confirm('No email credentials found. Please configure your credentials in Settings first. Go to Settings now?')) {
+          setSending(false)
+          return
+        }
+        router.push('/settings')
+        return
+      }
+
+      if (!confirm(`Send ${validLeads.length} emails now?`)) {
+        setSending(false)
+        return
+      }
+
+      // Send bulk emails with user's credentials
       const res = await fetch('/api/bulk-send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ leads: validLeads })
+        body: JSON.stringify({ 
+          leads: validLeads,
+          credentials: credData.credentials
+        })
       })
 
       const data = await res.json()

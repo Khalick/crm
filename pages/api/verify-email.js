@@ -25,14 +25,14 @@ export default async function handler(req, res) {
     }
   }
   
-  const { email } = req.body
+  const { email, hunterKey } = req.body
   
   if (!email || typeof email !== 'string') {
     return res.status(400).json({ error: 'Email is required' })
   }
   
   try {
-    const result = await verifyEmailHunter(email)
+    const result = await verifyEmailHunter(email, hunterKey)
     return res.status(200).json(result)
   } catch (error) {
     console.error('Verification error:', error)

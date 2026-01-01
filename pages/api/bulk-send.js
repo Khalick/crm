@@ -53,7 +53,7 @@ export default async function handler(req, res) {
     return res.status(429).json({ error: rateCheck.error })
   }
 
-  const { leads } = req.body || {}
+  const { leads, credentials } = req.body || {}
   if (!Array.isArray(leads) || leads.length === 0) {
     return res.status(400).json({ error: 'No leads provided' })
   }
@@ -62,15 +62,26 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Maximum 30 leads per request' })
   }
 
-  const SENDER = process.env.SEND_EMAIL_FROM || process.env.SENDGRID_FROM_EMAIL
-  const APP_PASSWORD = process.env.APP_PASSWORD
-  const USE_SENDGRID = !!process.env.SENDGRID_API_KEY
-  const VERIFY_EMAILS = !!process.env.HUNTER_API_KEY
+  // Use credentials from request body OR fall back to environment variables
+  const SENDER = credentials?.sendFrom || process.env.SEND_EMAIL_FROM || credentials?.sendgridFrom || process.env.SENDGRID_FROM_EMAIL
+  const APP_PASSWORD = credentials?.appPassword || process.env.APP_PASSWORD
+  const SENDGRID_KEY = credentials?.sendgridKey || process.env.SENDGRID_API_KEY
+  const USE_SENDGRID = !!SENDGRID_KEY
+  const HUNTER_KEY = credentials?.hunterKey || process.env.HUNTER_API_KEY
+  const VERIFY_EMAILS = !!HUNTER_KEY
   const DELAY_SECONDS = parseInt(process.env.DELAY_SECONDS || '60', 10)
 
-  // Check if we have email credentials
+  // Check if we have email credentials from either source
   if (!USE_SENDGRID && (!SENDER || !APP_PASSWORD)) {
-    return res.status(500).json({ error: 'Missing email credentials. Set SENDGRID_API_KEY or SEND_EMAIL_FROM+APP_PASSWORD' })
+    return res.status(400).json({ 
+      error: 'Missing email credentials. Configure in Settings page or set environment variables.' 
+    })
+  }
+
+  if (USE_SENDGRID && !credentials?.sendgridFrom && !process.env.SENDGRID_FROM_EMAIL) {
+    return res.status(400).json({ 
+      error: 'Missing SendGrid sender email. Configure in Settings page.' 
+    })
   }
 
   // Setup Gmail transporter if not using SendGrid
@@ -110,7 +121,7 @@ export default async function handler(req, res) {
     // Verify email if Hunter.io is configured
     if (VERIFY_EMAILS) {
       try {
-        const verification = await verifyEmailHunter(to)
+        const verification = await verifyEmailHunter(to, HUNTER_KEY)
         if (!verification.valid && verification.result === 'undeliverable') {
           results.push({ 
             email: to, 
@@ -160,7 +171,8 @@ export default async function handler(req, res) {
           to, 
           subject: 'Free website audit — I can help', 
           html,
-          from: SENDER 
+          from: credentials?.sendgridFrom || SENDER,
+          apiKey: SENDGRID_KEY
         })
       } else {
         await transporter.sendMail({ 

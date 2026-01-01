@@ -14,7 +14,13 @@
 1. Go to your Supabase dashboard: https://mfnovgaqkoikjomatkrt.supabase.co
 2. Navigate to **SQL Editor**
 3. Copy the entire content of `supabase.sql` and run it
-4. Verify tables were created in **Table Editor**
+4. Verify tables were created in **Table Editor** (leads, email_events, user_credentials)
+
+### Enable Email Authentication
+1. Go to **Authentication** → **Providers**
+2. Enable **Email** provider
+3. Configure email templates (optional)
+4. Set **Site URL** to your Vercel domain (e.g., https://your-app.vercel.app)
 
 ### Get Your Supabase Keys
 1. Go to **Settings** → **API**
@@ -25,13 +31,9 @@
 
 ---
 
-## Step 2: Setup Gmail App Password
+## Step 2: Create Your First User Account (REMOVED - Now done via UI)
 
-1. Enable 2-Factor Authentication on your Gmail account
-2. Go to Google Account → Security → 2-Step Verification
-3. Scroll down to **App passwords**
-4. Generate a new app password for "Mail"
-5. Copy the 16-character password (remove spaces)
+This step is no longer needed! Users can sign up directly through the application at `/login`.
 
 ---
 
@@ -73,10 +75,6 @@ SUPABASE_SERVICE_KEY=your_service_role_key_here
 # Application URL (replace with your Vercel domain)
 PUBLIC_APP_URL=https://your-app.vercel.app
 
-# Email Configuration
-SEND_EMAIL_FROM=your_email@gmail.com
-APP_PASSWORD=your_gmail_app_password
-
 # Security (generate with: openssl rand -base64 32)
 API_SECRET_KEY=generate_strong_random_key
 
@@ -89,6 +87,8 @@ ALLOWED_ORIGINS=https://your-app.vercel.app
 # Environment
 NODE_ENV=production
 ```
+
+**Note:** Email credentials (Gmail/SendGrid) are NO LONGER in environment variables. Each user configures their own credentials in the Settings page after signing up.
 
 ### Generate API Secret Key:
 ```bash
@@ -126,14 +126,21 @@ After adding all environment variables:
 
 ---
 
-## Step 7: Test Your Production Site
+## Step 7: Setup Your Account and Test
 
 1. Visit your Vercel URL
-2. Test the home page loads
-3. Go to `/bulk` and try adding a test lead (use your own email)
-4. Check `/leads` to see if it appears
-5. Check `/analytics` for stats
-6. Check your email for the test message
+2. Click **Sign In** → **Sign Up**
+3. Create your account with email/password
+4. Check your email to confirm (if email confirmation is enabled in Supabase)
+5. Go to **Settings** and configure your email credentials:
+   - Choose Gmail or SendGrid
+   - Enter your credentials
+   - Optionally add Hunter.io and Apollo.io API keys
+6. Save your credentials
+7. Test by going to `/bulk` and sending a test email to yourself
+8. Check `/leads` to see if it appears
+9. Check `/analytics` for stats
+10. Check your email for the test message
 
 ---
 
@@ -244,12 +251,12 @@ REINDEX TABLE email_events;
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | ✅ Yes | Supabase anonymous key (safe to expose) |
 | `SUPABASE_SERVICE_KEY` | ✅ Yes | Supabase service role key (SECRET!) |
 | `PUBLIC_APP_URL` | ✅ Yes | Your production domain |
-| `SEND_EMAIL_FROM` | ✅ Yes | Gmail address |
-| `APP_PASSWORD` | ✅ Yes | Gmail app password (not regular password) |
 | `API_SECRET_KEY` | ✅ Yes | Random secret for API auth |
 | `DELAY_SECONDS` | ⚠️ Recommended | Delay between emails (default: 60) |
 | `ALLOWED_ORIGINS` | ⚠️ Recommended | CORS allowed origins |
 | `NODE_ENV` | ⚠️ Auto-set | Set to 'production' by Vercel |
+
+**Note:** `SEND_EMAIL_FROM` and `APP_PASSWORD` are deprecated. Users now configure their own credentials in Settings.
 
 ---
 
