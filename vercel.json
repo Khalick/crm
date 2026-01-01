@@ -1,0 +1,73 @@
+{
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "installCommand": "npm install",
+  "framework": "nextjs",
+  "outputDirectory": ".next",
+  "regions": ["iad1"],
+  "env": {
+    "NEXT_PUBLIC_SUPABASE_URL": {
+      "description": "Your Supabase project URL",
+      "required": true
+    },
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": {
+      "description": "Your Supabase anonymous key",
+      "required": true
+    },
+    "SUPABASE_SERVICE_KEY": {
+      "description": "Your Supabase service role key (keep secret!)",
+      "required": true
+    },
+    "PUBLIC_APP_URL": {
+      "description": "Your production URL (e.g., https://yourapp.vercel.app)",
+      "required": true
+    },
+    "SEND_EMAIL_FROM": {
+      "description": "Gmail address for sending emails",
+      "required": true
+    },
+    "APP_PASSWORD": {
+      "description": "Gmail app password (not your regular password)",
+      "required": true
+    },
+    "API_SECRET_KEY": {
+      "description": "Secret key for API authentication (generate with: openssl rand -base64 32)",
+      "required": true
+    },
+    "DELAY_SECONDS": {
+      "description": "Delay between emails in seconds",
+      "value": "60"
+    },
+    "ALLOWED_ORIGINS": {
+      "description": "Comma-separated list of allowed CORS origins",
+      "required": false
+    }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "geolocation=(), microphone=(), camera=()"
+        }
+      ]
+    }
+  ]
+}
