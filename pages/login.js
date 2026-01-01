@@ -73,6 +73,9 @@ export default function Login() {
               />
               <p className="text-xs text-gray-500 mt-1">
                 This is your account login email
+              </p>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
                 {isSignUp ? 'Create Password for LocalLeads' : 'Account Password'}
@@ -91,9 +94,6 @@ export default function Login() {
                   ? '⚠️ This is NOT your email password. Create a new secure password for this CRM. Minimum 6 characters.' 
                   : 'Enter your LocalLeads account password'}
               </p>
-            </div>Minimum 6 characters
-                </p>
-              )}
             </div>
 
             {error && (
